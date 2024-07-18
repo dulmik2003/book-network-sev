@@ -144,7 +144,8 @@ public class AuthenticationService {
 
         //todo
         // Enable the User Account
-        // if that token's User is presenting in the database
+        // if the token is actually belongs to a USER
+        // that already present in database
         User user = userRepository.findById(savedToken.getUser().getId())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         user.setEnabled(true);

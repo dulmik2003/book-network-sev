@@ -89,8 +89,8 @@ public class JwtService {
 
 
     //todo
-    // check the JWT is actually
-    // belongs to a user that already in the database and
+    // check the JWT is actually belongs to a User
+    // that already present in database and
     // check JWT is not expired
     public boolean isValidToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
