@@ -36,3 +36,6 @@ application:
     jwt:
       secret-key: 454f524d58567251787a366b356e65706d534d3453347552566855756b466273
       expiration: 8640000
+  mailing:
+      frontend:
+        activation-url: http://localhost:4200/activae-account
