@@ -4,6 +4,7 @@ import com.dulmika.book.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -24,6 +25,11 @@ public class BeanConfig {
                 .orElseThrow(
                         () -> new UsernameNotFoundException("User not found")
                 );
+    }
+
+    @Bean
+    public AuditorAware<Integer> auditorAware() {
+        return new ApplicationAuditAware();
     }
 
     @Bean
