@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: username
       POSTGRES_PASSWORD: password
       PGDATA: /var/lib/postgres/data
-      POSTGRES_DB: car_rental_system
+      POSTGRES_DB: book_social_network
     volumes:
       - postgres:/data/postgres
     ports:
