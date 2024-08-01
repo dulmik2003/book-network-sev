@@ -1,6 +1,8 @@
 package com.dulmika.book.book;
 
 import com.dulmika.book.common.PageResponse;
+import com.dulmika.book.history.BookTransactionHistory;
+import com.dulmika.book.history.BookTransactionHistoryRepository;
 import com.dulmika.book.user.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
@@ -21,6 +23,7 @@ import static com.dulmika.book.book.BookSpecification.withOwnerId;
 public class BookService {
     private final ObjectMapper mapper;
     private final BookRepository bookRepository;
+    private final BookTransactionHistoryRepository transactionHistoryRepository;
 
     public Integer save(BookRequest request, Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
@@ -84,6 +87,37 @@ public class BookService {
                 bookPage.getTotalPages(),
                 bookPage.isFirst(),
                 bookPage.isLast()
+        );
+    }
+
+    public PageResponse<BorrowedBookResponse> findAllBorrowedBooks(int page, int size, Authentication connectedUser) {
+        User user = (User) connectedUser.getPrincipal();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
+        Page<BookTransactionHistory> borrowedBooksPage = transactionHistoryRepository.findAllBorrowedBooks(
+                pageable, user.getId()
+        );
+
+        List<BorrowedBookResponse> borrowedBookResponses = borrowedBooksPage.stream()
+                .map(history -> {
+                    BorrowedBookResponse borrowedBookResponse = mapper.convertValue(
+                            history.getBook(),
+                            BorrowedBookResponse.class
+                    );
+                    borrowedBookResponse.setReturned(history.isReturned());
+                    borrowedBookResponse.setReturnApproved(history.isReturnApproved());
+                    return borrowedBookResponse;
+                })
+                .toList();
+
+        return new PageResponse<>(
+                borrowedBookResponses,
+                page,
+                size,
+                borrowedBooksPage.getTotalElements(),
+                borrowedBooksPage.getTotalPages(),
+                borrowedBooksPage.isFirst(),
+                borrowedBooksPage.isLast()
         );
     }
 }
