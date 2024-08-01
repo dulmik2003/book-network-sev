@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 public class BookController {
     private final BookService bookService;
 
-    @PostMapping("save-book")
+    @PostMapping("/save-book")
     public ResponseEntity<Integer> saveBook(
             @Valid @RequestBody BookRequest request,
             Authentication connectedUser
@@ -23,19 +23,28 @@ public class BookController {
         return ResponseEntity.ok(bookService.save(request, connectedUser));
     }
 
-    @GetMapping("{book-id}")
+    @GetMapping("/{book-id}")
     public ResponseEntity<BookResponse> findBookId(
             @PathVariable("book-id") Integer bookId
     ) {
         return ResponseEntity.ok(bookService.findBookById(bookId));
     }
 
-    @GetMapping("all-books")
+    @GetMapping("/all-books")
     public ResponseEntity<PageResponse<BookResponse>> findAllBooks(
             @RequestParam(name = "page", defaultValue = "0", required = false) int page,
             @RequestParam(name = "size", defaultValue = "10", required = false) int size,
             Authentication connectedUser
     ) {
         return ResponseEntity.ok(bookService.findAllBooks(page, size, connectedUser));
+    }
+
+    @GetMapping("/books-by-owner")
+    public ResponseEntity<PageResponse<BookResponse>> findAllBooksByOwner(
+            @RequestParam(name = "page", defaultValue = "0", required = false) int page,
+            @RequestParam(name = "size", defaultValue = "10", required = false) int size,
+            Authentication connectedUser
+    ) {
+        return ResponseEntity.ok(bookService.findAllBooksByOwner(page, size, connectedUser));
     }
 }

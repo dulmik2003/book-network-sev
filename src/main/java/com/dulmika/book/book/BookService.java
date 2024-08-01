@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static com.dulmika.book.book.BookSpecification.withOwnerId;
+
 @Service
 @RequiredArgsConstructor
 public class BookService {
@@ -55,6 +57,29 @@ public class BookService {
                 bookResponses,
                 bookPage.getNumber(),
                 bookPage.getSize(),
+                bookPage.getTotalElements(),
+                bookPage.getTotalPages(),
+                bookPage.isFirst(),
+                bookPage.isLast()
+        );
+    }
+
+    public PageResponse<BookResponse> findAllBooksByOwner(int page, int size, Authentication connectedUser) {
+        User user = (User) connectedUser.getPrincipal();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
+        Page<Book> bookPage = bookRepository.findAll(withOwnerId(user.getId()), pageable);
+
+        List<BookResponse> bookResponses = bookPage.stream()
+                .map(book ->
+                        mapper.convertValue(book, BookResponse.class)
+                )
+                .toList();
+
+        return new PageResponse<>(
+                bookResponses,
+                page,
+                size,
                 bookPage.getTotalElements(),
                 bookPage.getTotalPages(),
                 bookPage.isFirst(),
