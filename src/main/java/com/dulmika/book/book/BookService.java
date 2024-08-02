@@ -1,6 +1,7 @@
 package com.dulmika.book.book;
 
 import com.dulmika.book.common.PageResponse;
+import com.dulmika.book.exception.OperationNotPermittedException;
 import com.dulmika.book.history.BookTransactionHistory;
 import com.dulmika.book.history.BookTransactionHistoryRepository;
 import com.dulmika.book.user.User;
@@ -15,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 import static com.dulmika.book.book.BookSpecification.withOwnerId;
 
@@ -39,7 +41,7 @@ public class BookService {
                 )
                 .orElseThrow(
                         () -> new EntityNotFoundException(
-                                "No book found with the ID::" + bookId
+                                "No book found with the ID:" + bookId
                         )
                 );
     }
@@ -150,5 +152,21 @@ public class BookService {
                 borrowedBooksPage.isFirst(),
                 borrowedBooksPage.isLast()
         );
+    }
+
+    public Integer updateShareableStatus(Integer bookId, Authentication connectedUser) {
+        User user = (User) connectedUser.getPrincipal();
+
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "No book found with the ID:" + bookId
+                ));
+
+        if (!Objects.equals(user.getId(), book.getOwner().getId())) {
+            throw new OperationNotPermittedException("You can't edit others book shareable status");
+        }
+        book.setShareable(!book.isShareable());
+        bookRepository.save(book);
+        return bookId;
     }
 }
