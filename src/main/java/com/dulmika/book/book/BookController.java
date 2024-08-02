@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 public class BookController {
     private final BookService bookService;
 
-    @PostMapping("/save-book")
+    @PostMapping("/save")
     public ResponseEntity<Integer> saveBook(
             @Valid @RequestBody BookRequest request,
             Authentication connectedUser
@@ -23,7 +23,7 @@ public class BookController {
         return ResponseEntity.ok(bookService.save(request, connectedUser));
     }
 
-    @GetMapping("/{book-id}")
+    @GetMapping("/get/{book-id}")
     public ResponseEntity<BookResponse> findBookId(
             @PathVariable("book-id") Integer bookId
     ) {
@@ -39,7 +39,7 @@ public class BookController {
         return ResponseEntity.ok(bookService.findAllBooks(page, size, connectedUser));
     }
 
-    @GetMapping("/books-by-owner")
+    @GetMapping("/by-owner")
     public ResponseEntity<PageResponse<BookResponse>> findAllBooksByOwner(
             @RequestParam(name = "page", defaultValue = "0", required = false) int page,
             @RequestParam(name = "size", defaultValue = "10", required = false) int size,
@@ -72,5 +72,21 @@ public class BookController {
             Authentication connectedUser
     ) {
         return ResponseEntity.ok(bookService.updateShareableStatus(bookId, connectedUser));
+    }
+
+    @PatchMapping("/archived/{book-id}")
+    public ResponseEntity<Integer> updateArchiveStatus(
+            @PathVariable("book-id") Integer bookId,
+            Authentication connectedUser
+    ) {
+        return ResponseEntity.ok(bookService.updateArchivedStatus(bookId, connectedUser));
+    }
+
+    @PostMapping("/borrow/{bppk-id}")
+    public ResponseEntity<Integer> borrowBook(
+            @PathVariable("book-id") Integer bookId,
+            Authentication connectedUser
+    ) {
+       return ResponseEntity.ok(bookService.borrowBook(bookId, connectedUser));
     }
 }
