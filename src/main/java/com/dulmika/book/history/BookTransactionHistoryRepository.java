@@ -5,22 +5,24 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Optional;
+
 public interface BookTransactionHistoryRepository extends JpaRepository<BookTransactionHistory, Integer> {
     @Query(
             """
-            SELECT history
-            FROM BookTransactionHistory history
-            WHERE history.user.id = :userId
+            SELECT transaction
+            FROM BookTransactionHistory transaction
+            WHERE transaction.user.id = :userId
             """
     )
     Page<BookTransactionHistory> findAllBorrowedBooks(Pageable pageable, Integer userId);
 
     @Query(
             """
-            SELECT history
-            FROM BookTransactionHistory history
-            WHERE history.book.ownerId = :userId
-            AND history.returned = true
+            SELECT transaction
+            FROM BookTransactionHistory transaction
+            WHERE transaction.book.ownerId = :userId
+            AND transaction.returned = true
             """
     )
     Page<BookTransactionHistory> findAllReturnedBooks(Pageable pageable, Integer id);
@@ -28,11 +30,23 @@ public interface BookTransactionHistoryRepository extends JpaRepository<BookTran
     @Query(
             """
             SELECT (count(*) > 0 ) AS isBorrowed
-            FROM BookTransactionHistory history
-            WHERE history.userId = :userId
-            AND history.book.id = :bookId
-            AND history.returnApproved = false
+            FROM BookTransactionHistory transaction
+            WHERE transaction.userId = :userId
+            AND transaction.book.id = :bookId
+            AND transaction.returnApproved = false
             """
     )
     boolean isAlreadyBorrowed(Integer bookId, Integer userId);
+
+    @Query(
+            """
+            SELECT transaction
+            FROM BookTransactionHistory transaction
+            WHERE transaction.userId = :userId
+            AND transaction.book.id = :bookId
+            AND transaction.returned = false
+            AND transaction.returnApproved = false
+            """
+    )
+    Optional<BookTransactionHistory> findByBookIdAndUserId(Integer bookId, Integer userId);
 }
