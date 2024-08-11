@@ -17,7 +17,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static jakarta.persistence.FetchType.EAGER;
 
@@ -74,7 +73,7 @@ public class User implements UserDetails, Principal {
         return this.roles
                 .stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

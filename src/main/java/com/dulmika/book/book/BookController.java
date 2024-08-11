@@ -9,7 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("books")
+@RequestMapping("/books")
 @RequiredArgsConstructor
 @Tag(name = "Book")
 public class BookController {
@@ -96,5 +96,12 @@ public class BookController {
             Authentication connectedUser
     ) {
         return ResponseEntity.ok(bookService.returnBorrowedBook(bookId,connectedUser));
+    }
+    @PatchMapping("/borrowed/return/approve/{book-id}")
+    public ResponseEntity<Integer> approveReturnOfBorrowedBook(
+            @PathVariable("book-id") Integer bookId,
+            Authentication connectedUser
+    ) {
+        return ResponseEntity.ok(bookService.approveReturnOfBorrowedBook(bookId,connectedUser));
     }
 }
