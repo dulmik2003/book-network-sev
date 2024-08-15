@@ -2,10 +2,10 @@ package com.dulmika.book.book;
 
 import com.dulmika.book.common.PageResponse;
 import com.dulmika.book.exception.OperationNotPermittedException;
+import com.dulmika.book.file.FileStorageService;
 import com.dulmika.book.history.BookTransactionHistory;
 import com.dulmika.book.history.BookTransactionHistoryRepository;
 import com.dulmika.book.user.User;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,22 +23,21 @@ import static com.dulmika.book.book.BookSpecification.withOwnerId;
 @Service
 @RequiredArgsConstructor
 public class BookService {
-    private final ObjectMapper mapper;
+    private final BookMapper bookMapper;
     private final BookRepository bookRepository;
     private final BookTransactionHistoryRepository transactionHistoryRepository;
+    private final FileStorageService fileStorageService;
 
     public Integer save(BookRequest request, Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
-        Book book = mapper.convertValue(request, Book.class);
+        Book book = bookMapper.bookRequestToBook(request);
         book.setOwner(user);
         return bookRepository.save(book).getId();
     }
 
     public BookResponse findBookById(Integer bookId) {
         return bookRepository.findById(bookId)
-                .map(book ->
-                        mapper.convertValue(book, BookResponse.class)
-                )
+                .map(bookMapper::bookToBookResponse)
                 .orElseThrow(
                         () -> new EntityNotFoundException(
                                 "No book found with the ID:" + bookId
@@ -53,9 +52,7 @@ public class BookService {
         Page<Book> bookPage = bookRepository.findAllDisplayableBooks(pageable, user.getId());
 
         List<BookResponse> bookResponses = bookPage.stream()
-                .map(book ->
-                        mapper.convertValue(book, BookResponse.class)
-                )
+                .map(bookMapper::bookToBookResponse)
                 .toList();
 
         return new PageResponse<>(
@@ -76,9 +73,7 @@ public class BookService {
         Page<Book> bookPage = bookRepository.findAll(withOwnerId(user.getId()), pageable);
 
         List<BookResponse> bookResponses = bookPage.stream()
-                .map(book ->
-                        mapper.convertValue(book, BookResponse.class)
-                )
+                .map(bookMapper::bookToBookResponse)
                 .toList();
 
         return new PageResponse<>(
@@ -101,15 +96,7 @@ public class BookService {
         );
 
         List<BorrowedBookResponse> borrowedBookResponses = borrowedBooksPage.stream()
-                .map(history -> {
-                    BorrowedBookResponse borrowedBookResponse = mapper.convertValue(
-                            history.getBook(),
-                            BorrowedBookResponse.class
-                    );
-                    borrowedBookResponse.setReturned(history.isReturned());
-                    borrowedBookResponse.setReturnApproved(history.isReturnApproved());
-                    return borrowedBookResponse;
-                })
+                .map(bookMapper::transactionHistoryToBorrowedBookResponse)
                 .toList();
 
         return new PageResponse<>(
@@ -132,15 +119,7 @@ public class BookService {
         );
 
         List<BorrowedBookResponse> borrowedBookResponses = borrowedBooksPage.stream()
-                .map(history -> {
-                    BorrowedBookResponse borrowedBookResponse = mapper.convertValue(
-                            history.getBook(),
-                            BorrowedBookResponse.class
-                    );
-                    borrowedBookResponse.setReturned(history.isReturned());
-                    borrowedBookResponse.setReturnApproved(history.isReturnApproved());
-                    return borrowedBookResponse;
-                })
+                .map(bookMapper::transactionHistoryToBorrowedBookResponse)
                 .toList();
 
         return new PageResponse<>(
