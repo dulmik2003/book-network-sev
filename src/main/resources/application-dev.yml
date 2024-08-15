@@ -39,3 +39,6 @@ application:
   mailing:
       frontend:
         activation-url: http://localhost:4200/activae-account
+  file:
+    upload:
+      photos-output/path: ./uploads

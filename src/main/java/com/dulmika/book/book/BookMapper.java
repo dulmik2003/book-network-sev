@@ -1,4 +1,5 @@
 package com.dulmika.book.book;
+import com.dulmika.book.file.FileUtils;
 import com.dulmika.book.history.BookTransactionHistory;
 import org.springframework.stereotype.Service;
 
@@ -27,8 +28,7 @@ public class BookMapper {
                 .archived(book.isArchived())
                 .shareable(book.isShareable())
                 .ownerName(book.getOwner().getFullName())
-//                implement later
-//                .bookCover()
+                .bookCover(FileUtils.readFileFromLocation(book.getBookCover()))
                 .build();
     }
 
