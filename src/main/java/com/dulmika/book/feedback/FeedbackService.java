@@ -2,13 +2,18 @@ package com.dulmika.book.feedback;
 
 import com.dulmika.book.book.Book;
 import com.dulmika.book.book.BookRepository;
+import com.dulmika.book.common.PageResponse;
 import com.dulmika.book.exception.OperationNotPermittedException;
 import com.dulmika.book.user.User;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -34,5 +39,28 @@ public class FeedbackService {
 
         Feedback feedback = feedbackMapper.feedbackRequestToFeedback(request);
         return feedBackRepository.save(feedback).getId();
+    }
+
+//    @Transactional
+    public PageResponse<FeedbackResponse> findAllFeedbacksByBook(Integer bookId, int page, int size, Authentication connectedUser) {
+        Pageable pageable = PageRequest.of(page, size);
+        User user = ((User) connectedUser.getPrincipal());
+        Page<Feedback> feedbacks = feedBackRepository.findAllByBookId(bookId, pageable);
+
+        List<FeedbackResponse> feedbackResponses = feedbacks.stream()
+                .map(feedback ->
+                        feedbackMapper.feedbacktoFeedbackResponse(feedback, user.getId())
+                )
+                .toList();
+
+        return new PageResponse<>(
+                feedbackResponses,
+                feedbacks.getNumber(),
+                feedbacks.getSize(),
+                feedbacks.getTotalElements(),
+                feedbacks.getTotalPages(),
+                feedbacks.isFirst(),
+                feedbacks.isLast()
+        );
     }
 }

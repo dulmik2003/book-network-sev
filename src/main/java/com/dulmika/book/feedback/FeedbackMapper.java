@@ -3,6 +3,8 @@ package com.dulmika.book.feedback;
 import com.dulmika.book.book.Book;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 public class FeedbackMapper {
     public Feedback feedbackRequestToFeedback(FeedbackRequest request) {
@@ -15,6 +17,14 @@ public class FeedbackMapper {
                         .archived(false) // Not required and has no impact :: just to satisfy lombok
                         .build()
                 )
+                .build();
+    }
+
+    public FeedbackResponse feedbacktoFeedbackResponse(Feedback feedback, Integer id) {
+        return FeedbackResponse.builder()
+                .note(feedback.getNote())
+                .comment(feedback.getComment())
+                .ownFeedback(Objects.equals(feedback.getCreatedBy(), id))
                 .build();
     }
 }
