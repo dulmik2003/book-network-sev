@@ -22,6 +22,6 @@ public class Feedback extends BaseEntity {
     private String comment;
 
     @ManyToOne
-        @JoinColumn(name = "book_id", nullable = false)
+    @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 }
