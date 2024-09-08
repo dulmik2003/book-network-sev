@@ -1,5 +1,6 @@
 package com.dulmika.book.auth;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import  io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
