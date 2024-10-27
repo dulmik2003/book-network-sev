@@ -26,6 +26,8 @@ public class Book extends BaseEntity {
     private String title;
     private String authorName;
     private String synopsis;
+
+    //contain the path of the cover picture
     private String bookCover;
     private boolean archived;
     private boolean shareable;
@@ -43,14 +45,14 @@ public class Book extends BaseEntity {
 
     @Transient
     public double getRate() {
-        if (feedbacks == null || feedbacks.isEmpty()) {
+        if (this.feedbacks == null || this.feedbacks.isEmpty()) {
             return  0.0;
         }
 
-        double rate = feedbacks.stream()
+        double averageRate = this.feedbacks.stream()
                 .mapToDouble(Feedback::getNote)
                 .average()
                 .orElse(0.0);
-        return Math.round(rate * 10.0) / 10.0;
+        return Math.round(averageRate * 10.0) / 10.0;
     }
 }

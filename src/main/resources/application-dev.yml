@@ -6,7 +6,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -35,10 +35,10 @@ application:
   security:
     jwt:
       secret-key: 454f524d58567251787a366b356e65706d534d3453347552566855756b466273
-      expiration: 8640000
+      expiration: 86400000
   mailing:
       frontend:
-        activation-url: http://localhost:4200/activae-account
+        activation-url: http://localhost:4200/activate-account
   file:
     upload:
       photos-output/path: ./uploads

@@ -4,10 +4,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 public record BookRequest(
-        @NotNull(message = "100")
-        @NotEmpty(message = "100")
-        Integer id,
-
         @NotNull(message = "101")
         @NotEmpty(message = "101")
         String title,

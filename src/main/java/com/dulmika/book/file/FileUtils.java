@@ -20,7 +20,8 @@ public class FileUtils {
             // Convert the String file path to a Path object.
             // cause we need a Path object for read or write a file.
             Path filePath = Paths.get(fileUrl);
-            return Files.readAllBytes(filePath);
+            byte[] bytes = Files.readAllBytes(filePath);
+            return bytes;
         } catch (IOException e) {
             log.warn("No file found in the path {}", fileUrl);
         }

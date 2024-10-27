@@ -31,14 +31,14 @@ public class BookService {
 
     public Integer save(BookRequest request, Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
-        Book book = bookMapper.bookRequestToBook(request);
+        Book book = bookMapper.toBook(request);
         book.setOwner(user);
         return bookRepository.save(book).getId();
     }
 
     public BookResponse findBookById(Integer bookId) {
         return bookRepository.findById(bookId)
-                .map(bookMapper::bookToBookResponse)
+                .map(bookMapper::toBookResponse)
                 .orElseThrow(
                         () -> new EntityNotFoundException(
                                 "No book found with the ID:" + bookId
@@ -48,16 +48,14 @@ public class BookService {
 
     public PageResponse<BookResponse> findAllBooks(int page, int size, Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
-
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
+
         Page<Book> bookPage = bookRepository.findAllDisplayableBooks(pageable, user.getId());
 
-        List<BookResponse> bookResponses = bookPage.stream()
-                .map(bookMapper::bookToBookResponse)
-                .toList();
-
         return new PageResponse<>(
-                bookResponses,
+                (bookPage.stream()
+                        .map(bookMapper::toBookResponse)
+                        .toList()),
                 bookPage.getNumber(),
                 bookPage.getSize(),
                 bookPage.getTotalElements(),
@@ -69,16 +67,14 @@ public class BookService {
 
     public PageResponse<BookResponse> findAllBooksByOwner(int page, int size, Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
-
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
+
         Page<Book> bookPage = bookRepository.findAll(withOwnerId(user.getId()), pageable);
 
-        List<BookResponse> bookResponses = bookPage.stream()
-                .map(bookMapper::bookToBookResponse)
-                .toList();
-
         return new PageResponse<>(
-                bookResponses,
+                (bookPage.stream()
+                        .map(bookMapper::toBookResponse)
+                        .toList()),
                 page,
                 size,
                 bookPage.getTotalElements(),
@@ -90,18 +86,16 @@ public class BookService {
 
     public PageResponse<BorrowedBookResponse> findAllBorrowedBooks(int page, int size, Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
-
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
+
         Page<BookTransactionHistory> borrowedBooksPage = transactionHistoryRepository.findAllBorrowedBooks(
                 pageable, user.getId()
         );
 
-        List<BorrowedBookResponse> borrowedBookResponses = borrowedBooksPage.stream()
-                .map(bookMapper::transactionHistoryToBorrowedBookResponse)
-                .toList();
-
         return new PageResponse<>(
-                borrowedBookResponses,
+                (borrowedBooksPage.stream()
+                        .map(bookMapper::toBorrowedBookResponse)
+                        .toList()),
                 page,
                 size,
                 borrowedBooksPage.getTotalElements(),
@@ -113,24 +107,22 @@ public class BookService {
 
     public PageResponse<BorrowedBookResponse> findAllReturnedBooks(int page, int size, Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
-
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
-        Page<BookTransactionHistory> borrowedBooksPage = transactionHistoryRepository.findAllReturnedBooks(
+
+        Page<BookTransactionHistory> returnedBooksPage = transactionHistoryRepository.findAllReturnedBooks(
                 pageable, user.getId()
         );
 
-        List<BorrowedBookResponse> borrowedBookResponses = borrowedBooksPage.stream()
-                .map(bookMapper::transactionHistoryToBorrowedBookResponse)
-                .toList();
-
         return new PageResponse<>(
-                borrowedBookResponses,
+                (returnedBooksPage.stream()
+                        .map(bookMapper::toBorrowedBookResponse)
+                        .toList()),
                 page,
                 size,
-                borrowedBooksPage.getTotalElements(),
-                borrowedBooksPage.getTotalPages(),
-                borrowedBooksPage.isFirst(),
-                borrowedBooksPage.isLast()
+                returnedBooksPage.getTotalElements(),
+                returnedBooksPage.getTotalPages(),
+                returnedBooksPage.isFirst(),
+                returnedBooksPage.isLast()
         );
     }
 
@@ -232,16 +224,16 @@ public class BookService {
         }
 
         User user = (User) connectedUser.getPrincipal();
-        if (Objects.equals(user.getId(), book.getOwner().getId())) {
-            throw new OperationNotPermittedException("You cannot approve return of your own books");
+        if (!Objects.equals(user.getId(), book.getOwner().getId())) {
+            throw new OperationNotPermittedException("You cannot approve return of books that you don't own");
         }
 
-        transactionHistoryRepository.findByBookIdAndOwnerId(bookId, user.getId())
+        BookTransactionHistory bookTransactionHistory = transactionHistoryRepository.findByBookIdAndOwnerId(bookId, user.getId())
                 .orElseThrow(() ->
                         new OperationNotPermittedException("The book is not returned yet")
                 );
-
-        return null;
+        bookTransactionHistory.setReturnApproved(true);
+        return transactionHistoryRepository.save(bookTransactionHistory).getId();
     }
 
     public void uploadBookCoverPicture(MultipartFile file, Authentication connectedUser, Integer bookId) {

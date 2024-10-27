@@ -47,7 +47,7 @@ public class FileStorageService {
         final String fileExtension = getFileExtension(sourceFile.getOriginalFilename());
 
         //todo
-        // ./upload/users/1/ + 23533353224  + . + jpg
+        // ./upload/users/1/ + 23533353224  + . + ('jpg' or 'png' or ...)
         String targetFilePath = finalUploadPath + File.separator + System.currentTimeMillis() + "." + fileExtension;
 
         //todo
