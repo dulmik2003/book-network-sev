@@ -24,9 +24,10 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '17'
-          distribution: 'oracle'
+          distribution: 'corretto'
 
-      - name: Running Unit Tests
+      - name: Running maven command for compile
+        shell: cmd
         run: mvnw clean compile
 
 #  unit-tests:
@@ -51,7 +52,7 @@ jobs:
   build:
     runs-on: windows-latest
     name: Build backend
-    needs: [compile, unit-tests]
+    needs: [compile]
     steps:
       - name: Pull the repository code into the runner
         uses: actions/checkout@v4
