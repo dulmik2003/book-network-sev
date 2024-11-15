@@ -13,20 +13,33 @@ spring:
         format_sql: true
     database: postgresql
   mail:
-    host: localhost
-    port: 1025
-    username: user
-    password: pass
+#    host: localhost
+#    port: 1025
+#    username: user
+#    password: pass
+#    properties:
+#      mail:
+#        smtp:
+#          trust: "*"
+#        auth: true
+#        starttls:
+#          enable: true
+#        connectiontimeout: 5000
+#        timeout: 3000
+#        writetimeout: 5000mail:
+    protocol: smtp
+    host: ${EMAIL_HOST_NAME}
+    port: 587
+#    username: twilighttom493@gmail.com
+    username: ${EMAIL_USERNAME}
+#    password: qqyx pciv xcef osgi
+    password: ${EMAIL_PASSWORD}
     properties:
       mail:
         smtp:
-          trust: "*"
-        auth: true
-        starttls:
-          enable: true
-        connectiontimeout: 5000
-        timeout: 3000
-        writetimeout: 5000
+          auth: true
+          starttls:
+            enable: true
 
 server:
   port: 8088
@@ -39,6 +52,8 @@ application:
   mailing:
       frontend:
         activation-url: http://localhost:4200/activate-account
+  cors:
+    origins: http://192.168.0.227:8088/,http://localhost:8088/,http://localhost:4200,http://192.168.0.227:8080
   file:
     upload:
       photos-output/path: ./uploads

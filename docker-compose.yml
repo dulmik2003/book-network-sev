@@ -1,5 +1,23 @@
+name: book-network
+
 services:
-  postgres-sql:
+  backend:
+    container_name: book-social-network
+    image: bsn/bsn:1.0.0
+    pull_policy: if_not_present
+    depends_on:
+      - database
+      - mail-server
+    ports:
+      - 8088:8088
+    environment:
+      EMAIL_HOST_NAME: ${EMAIL_HOST_NAME}
+      EMAIL_USERNAME: ${EMAIL_USERNAME}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+    networks:
+      - bsn-net
+
+  database:
     container_name: postgres-sql-bsn
     image: postgres
     environment:
@@ -12,19 +30,22 @@ services:
     ports:
       - 5432:5432
     networks:
-      - spring-demo
+      - bsn-net
     restart: unless-stopped
-  mail-dev:
-    container_name: mail-dev-bsn
-    image: maildev/maildev
-    ports:
-      - 1080:1080
-      - 1025:1025
+
+#  mail-server:
+#    container_name: mail-dev-bsn
+#    image: maildev/maildev
+#    networks:
+#      - bsn-net
+#    ports:
+#      - 1080:1080
+#      - 1025:1025
 
 volumes:
   postgres:
     driver: local
 
 networks:
-  spring-demo:
+  bsn-net:
     driver: bridge
