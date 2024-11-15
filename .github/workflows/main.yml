@@ -1,0 +1,105 @@
+name: BSN Backend API Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - book-network-sev
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - .github/workflows/**
+
+jobs:
+  compile:
+    runs-on: windows-latest
+    name: Compile the project
+    steps:
+      - name: Pull the repository code into the runner
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+
+      - name: Running maven command for compile
+        shell: cmd
+        run: mvnw clean compile
+
+#  unit-tests:
+#    runs-on: windows-latest
+#    name: Unit tests
+#    steps:
+#      - name: Pull the repository code into the runner
+#        uses: actions/checkout@v4
+#        with:
+#          fetch-depth: 0
+#
+#      - name: Setup JDK
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: '17'
+#          distribution: 'corretto'
+#
+#      - name: Running Unit Tests
+#        run: mvnw clean test
+
+
+  build:
+    runs-on: windows-latest
+    name: Build backend
+    needs: [compile]
+    steps:
+      - name: Pull the repository code into the runner
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+
+      - name: Build the project
+        run: mvnw clean package
+
+
+#  build-image:
+#    name: Build Docker image
+#    runs-on: self-hosted
+#    needs: [build]
+#    steps:
+#      - name: Setup JDK
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: '17'
+#          distribution: 'corretto'
+#
+#      - name: Extract project version
+#        id: extract_version
+#        run: |
+#          cd book-network
+#          echo "VERSION=$(./mvnw -q -Dexec.executable='echo' -Dexec.args='${project.version}' --non-recursive exec:exec)" >> $GITHUB_OUTPUT
+#
+#      - name: Login to DockerHub
+#        uses: docker/login-action@v3
+#        with:
+#          username: ${{ secrets.DOCKERHUB_USERNAME }}
+#          password: ${{ secrets.DOCKERHUB_TOKEN }}
+#
+#      - name: Build & Push to DockerHub
+#        uses: docker/build-push-action@v5
+#        with:
+#          context: book-network
+#          file: docker/backend/Dockerfile
+#          push: true
+#          platforms: linux/amd64
+#          tags: ${{ secrets.DOCKERHUB_USERNAME }}/bsn-api:${{ steps.extract_version.outputs.VERSION }},${{ secrets.DOCKERHUB_USERNAME }}/bsn-api:latest
+#          build-args: |
+#            PROFILE=dev
+#            APP_VERSION=${{ steps.extract_version.outputs.VERSION }}
